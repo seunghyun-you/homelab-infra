@@ -1,0 +1,46 @@
+apiVersion: cilium.io/v2
+kind: CiliumBGPAdvertisement        # Cilium이 BGP로 광고할 정보를 기록
+metadata:
+  name: bgp-advertisements
+  labels:
+    advertise: bgp
+spec:
+  advertisements:
+    - advertisementType: "PodCIDR"  # PodCIDR을 BGP로 광고한다는 설정
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPPeerConfig     # 네트워크 팀과 협의하에 관련 네트워크 속성을 아래 spec 필드에 지정
+metadata:
+  name: cilium-peer           # 아래의 CiliumBGPClusterConfig 리소스에 peerConfigRef 필드에 입력
+spec:
+  timers:
+    holdTimeSeconds: 9
+    keepAliveTimeSeconds: 3
+  ebgpMultihop: 2
+  gracefulRestart:
+    enabled: true
+    restartTimeSeconds: 15
+  families:
+    - afi: ipv4
+      safi: unicast
+      advertisements:         # 광고할 내용이 무엇인지 지정
+        matchLabels:
+          advertise: "bgp"    # 광고할 내용은 해당 Labels을 가진 CiliumBGPAdvertisement 리소스를 참조하도록 설정
+---
+apiVersion: cilium.io/v2
+kind: CiliumBGPClusterConfig       # Cilium 입장에서 BGP Neighbor 맺을 상대편 네트워크 장비 정보를 입력하는 설정
+metadata:
+  name: cilium-bgp
+spec:
+  nodeSelector:                    # Cilium Node 중 BGP를 사용할 노드 정보 설정 
+    matchLabels:
+      "enable-bgp": "true"         # 이 Label 정보가 있는 노드에 BGP 설정 진행
+  bgpInstances:                    # 상대방 네트워크 장비와 Neighbor 맺기 위한 정보 입력
+  - name: "instance-65001"
+    localASN: 65001                # Cilium 자신의 ASN
+    peers:
+    - name: "tor-switch"
+      peerASN: 65000               # 상대방 네트워크 장비의 ASN
+      peerAddress: 192.168.10.200  # 상대방 네트워크 장비의 ip address
+      peerConfigRef:
+        name: "cilium-peer"        # BGP 관련 네트워크 속성/설정 값들이 담긴 리소스의 metadata.name 을 지정 (바로 위 CiliumBGPPeerConfig 리소스)

@@ -1,0 +1,16 @@
+kubeProxyReplacement: true
+## l2 announcements options
+autoDirectNodeRoutes: false
+l2announcements:
+  enabled: false
+externalIPs:
+  enabled: false
+## bgp announcements options
+bgpControlPlane:
+  enabled: true
+ingressController:
+  enabled: true
+  loadbalancerMode: shared
+loadBalancer:
+  l7:
+    backend: envoy

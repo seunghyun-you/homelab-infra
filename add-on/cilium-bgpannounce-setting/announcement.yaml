@@ -1,0 +1,17 @@
+apiVersion: cilium.io/v2
+kind: CiliumBGPAdvertisement
+metadata:
+  name: bgp-advertisements-lb-exip-webpod
+  labels:
+    advertise: bgp
+spec:
+  advertisements:
+    - advertisementType: "Service"
+      service:
+        addresses:
+          #          - ClusterIP
+          - LoadBalancerIP
+          - ExternalIP
+      selector:
+        matchExpressions:
+          - {key: externalIP, operator: In, values: ['true']}
