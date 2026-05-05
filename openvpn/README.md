@@ -1,9 +1,5 @@
 # OpenVPN Configuration
 
-## 네트워크 구성
-
-![alt text](../../00-images/openvpn-network.png)
-
 ## 설정 파일 설명
 
 ### 파일 구조
